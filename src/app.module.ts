@@ -9,6 +9,7 @@ import { CommonModule } from './common/common.module';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
 import { AccessTokenGuard } from './auth/guard/bearer-token.guard';
+import { RampsModule } from './ramps/ramps.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { AccessTokenGuard } from './auth/guard/bearer-token.guard';
     UsersModule,
     CommonModule,
     AuthModule,
+    RampsModule,
   ],
   controllers: [AppController],
   providers: [
