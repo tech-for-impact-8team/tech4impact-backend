@@ -10,6 +10,7 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserRequestDto } from './dto/create-user-request.dto';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiOperation,
   ApiParam,
@@ -44,6 +45,7 @@ export class UsersController {
   @ApiResponse({
     type: GetUserInfoDto,
   })
+  @ApiBearerAuth('authorization')
   getUser(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.getUser(id);
   }
@@ -55,6 +57,7 @@ export class UsersController {
     type: Number,
     example: '1',
   })
+  @ApiBearerAuth('authorization')
   deleteUser(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.deleteUser(id);
   }
