@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { IsPublic } from '../common/decorator/is-public.decorator';
-import { ApiCookieAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCookieAuth, ApiOperation } from '@nestjs/swagger';
 import { Response, Request } from 'express';
 import { RefreshTokenCookieGuard } from './guard/bearer-token.guard';
 
@@ -62,6 +62,8 @@ export class AuthController {
 
   @Post('logout')
   @ApiOperation({ summary: '로그아웃' })
+  @ApiCookieAuth('refresh_token')
+  @ApiBearerAuth('authorization')
   async logout(@Res({ passthrough: true }) res: Response) {
     this.authService.clearRefreshCookie(res);
     return { ok: true };
