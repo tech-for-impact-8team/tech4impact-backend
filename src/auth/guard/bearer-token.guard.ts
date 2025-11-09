@@ -67,20 +67,37 @@ export class AccessTokenGuard extends BearerTokenGuard {
 }
 
 @Injectable()
-export class RefreshTokenGuard extends BearerTokenGuard {
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    await super.canActivate(context);
+export class RefreshTokenCookieGuard implements CanActivate {
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService,
+    private readonly reflector: Reflector,
+  ) {}
 
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
     const req = context.switchToHttp().getRequest();
 
-    if (req.isRoutePublic) {
+    if (isPublic) {
+      req.isRoutePublic = true;
       return true;
     }
 
-    if (req.tokenType !== 'refresh') {
+    const token = req.cookies?.refresh_token;
+    if (!token)
+      throw new UnauthorizedException('refresh 토큰 쿠키가 없습니다.');
+
+    const decoded = await this.authService.verifyToken(token);
+    if (decoded.type !== 'refresh') {
       throw new UnauthorizedException('refreshToken이 아닙니다.');
     }
 
+    req.user = await this.usersService.getUserByEmail(decoded.email);
+    req.token = token;
+    req.tokenType = decoded.type;
     return true;
   }
 }
