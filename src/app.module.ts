@@ -11,6 +11,7 @@ import { AuthModule } from './auth/auth.module';
 import { AccessTokenGuard } from './auth/guard/bearer-token.guard';
 import { RampsModule } from './ramps/ramps.module';
 import { RampsModel } from './ramps/entities/ramps.entity';
+import { ImageModel } from './common/entities/image.entity';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { RampsModel } from './ramps/entities/ramps.entity';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME,
-      entities: [UsersModel, RampsModel],
+      entities: [UsersModel, RampsModel, ImageModel],
       // nest.js에서 db 자동 생성
       // 개발 환경 true
       // 프로덕션 환경 false
