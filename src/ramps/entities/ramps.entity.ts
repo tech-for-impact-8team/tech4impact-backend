@@ -24,7 +24,7 @@ export class RampsModel extends BaseModel {
 
   @Column('decimal', { precision: 10, scale: 2 })
   @IsNumber()
-  width: string;
+  width: number;
 
   @Column('double precision')
   @IsNumber()
