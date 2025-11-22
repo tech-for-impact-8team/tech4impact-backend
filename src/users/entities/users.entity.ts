@@ -1,8 +1,9 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 import { BaseModel } from '../../common/entities/base.entity';
 import { IsEmail, IsString } from 'class-validator';
 import { Exclude } from 'class-transformer';
 import { RolesEnum } from '../const/roles.const';
+import { RampsModel } from '../../ramps/entities/ramps.entity';
 
 @Entity()
 export class UsersModel extends BaseModel {
@@ -31,4 +32,9 @@ export class UsersModel extends BaseModel {
     default: RolesEnum.USER,
   })
   role: RolesEnum;
+
+  @OneToMany(() => RampsModel, (ramps) => ramps.user, {
+    nullable: true,
+  })
+  ramps: RampsModel[];
 }
