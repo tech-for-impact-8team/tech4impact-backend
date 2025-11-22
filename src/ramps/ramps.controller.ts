@@ -22,11 +22,20 @@ import { QueryRunnerDecorator } from '../common/decorator/query-runner.decorator
 import { QueryRunner as QR } from 'typeorm';
 import { IsPublic } from '../common/decorator/is-public.decorator';
 import { UsersModel } from '../users/entities/users.entity';
-import { ApiBasicAuth, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiBasicAuth,
+  ApiBearerAuth,
+  ApiBody,
+  ApiQuery,
+} from '@nestjs/swagger';
+import { ImagesService } from './image/images.service';
 
 @Controller('ramps')
 export class RampsController {
-  constructor(private readonly rampsService: RampsService) {}
+  constructor(
+    private readonly rampsService: RampsService,
+    private readonly imagesService: ImagesService,
+  ) {}
 
   @Get()
   @ApiBearerAuth('authorization')
@@ -40,29 +49,21 @@ export class RampsController {
     return this.rampsService.getRampsById(id);
   }
 
-  /*@Post()
+  @Post()
   @UseInterceptors(TransactionInterceptor)
+  @ApiBearerAuth('authorization')
+  @ApiBody({ type: CreateRampDto })
   async postRamp(
     @UserDecorator('id') userId?: number,
-    @Body() body: CreateRampDto,
-    @QueryRunnerDecorator() qr: QR,
+    @Body() body?: CreateRampDto,
+    @QueryRunnerDecorator() qr?: QR,
   ) {
-    const ramp = this.rampsService.createRamp(userId, body, qr);
+    const ramp = await this.rampsService.createRamp(userId, body, qr);
 
-    for (let i = 0; i < body.images.length; i++) {
-      await this.rampsImageService.createRampsImage(
-        {
-          ramp,
-          order: i,
-          path: body.images[i],
-          type: ImageType.RAMP_IMAGE,
-        },
-        qr,
-      );
-    }
+    await this.imagesService.createRampImages(ramp, body.imagesKeys, qr);
 
-    return this.rampsService.getRampsById(ramp.id);
-  }*/
+    return await this.rampsService.getRampsById(ramp.id, qr);
+  }
 
   @Delete()
   @ApiBearerAuth('authorization')

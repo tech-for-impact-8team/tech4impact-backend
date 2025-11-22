@@ -22,12 +22,14 @@ import { DeleteRampDto } from './dto/delete-ramp.dto';
 import { UpdateRampDto } from './dto/update-ramp.dto';
 import { CreateRampDto } from './dto/create-ramp.dto';
 import { UsersService } from '../users/users.service';
+import { ImagesService } from './image/images.service';
 
 @Injectable()
 export class RampsService {
   constructor(
     @InjectRepository(RampsModel)
     private readonly rampsRepository: Repository<RampsModel>,
+    private readonly imagesService: ImagesService,
     private readonly userService: UsersService,
   ) {}
 
@@ -61,7 +63,14 @@ export class RampsService {
       },
     });
 
-    return await repository.save(ramp);
+    const savedRamp = await repository.save(ramp);
+
+    await this.imagesService.createRampImages(savedRamp, body.imagesKeys, qr);
+
+    return repository.findOne({
+      where: { id: savedRamp.id },
+      relations: ['images'],
+    });
   }
 
   async deleteRamps(body: DeleteRampDto) {
@@ -251,14 +260,12 @@ export class RampsService {
       await this.createRamp(id, {
         type: '타입',
         district: '금천구',
-        images: [],
+        imagesKeys: [],
         width: 12.33,
         tradeName: '사람인',
         latitude: 33.444244,
         longitude: 24.10022,
         address: '서울시 금천구 어쩌구 저쩌구',
-        userId: id,
-        state: '완료',
       });
     }
   }

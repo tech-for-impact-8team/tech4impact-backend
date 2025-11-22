@@ -34,9 +34,9 @@ export class RampsModel extends BaseModel {
   @IsNumber()
   longitude: number;
 
-  @Column()
+  /*@Column()
   @IsString()
-  state: string;
+  state: string;*/
 
   @ManyToOne(() => UsersModel, (user) => user.ramps, {
     nullable: true,
