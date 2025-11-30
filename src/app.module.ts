@@ -26,10 +26,16 @@ import { S3Module } from './s3/s3.module';
       password: process.env.DB_PASS,
       database: process.env.DB_NAME,
       entities: [UsersModel, RampsModel, ImageModel],
+      ssl:
+        process.env.DB_SSL === 'true'
+          ? {
+              rejectUnauthorized: false,
+            }
+          : false,
       // nest.js에서 db 자동 생성
       // 개발 환경 true
       // 프로덕션 환경 false
-      synchronize: true,
+      synchronize: process.env.NODE_ENV !== 'production',
     }),
     UsersModule,
     CommonModule,
