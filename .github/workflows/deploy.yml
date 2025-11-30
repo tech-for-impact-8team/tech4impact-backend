@@ -1,0 +1,70 @@
+name: CI/CD - Tech4Impact Backend
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  ci:
+    name: CI (build only)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Enable corepack (pnpm)
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm build
+
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: ci
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: SSH & Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            set -e
+
+            cd ~/tech4impact-backend
+
+            echo ">> git pull"
+            git pull origin main
+
+            echo ">> stop & remove old container"
+            docker stop tech-api || true
+            docker rm tech-api || true
+
+            echo ">> build new image"
+            docker build -t tech-data-app .
+
+            echo ">> run new container"
+            docker run -d \
+              --name tech-api \
+              --env-file .env \
+              -p 80:3000 \
+              tech-data-app
+
+            echo ">> deployment done"
