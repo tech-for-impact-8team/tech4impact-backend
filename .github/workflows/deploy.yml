@@ -82,6 +82,8 @@ jobs:
             IMAGE="${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.IMAGE_NAME }}"
             TAG="${{ github.sha }}"
             
+            cd ~/tech4impact-backend
+            
             echo ">> docker login ghcr.io"
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
