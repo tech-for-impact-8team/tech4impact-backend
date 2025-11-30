@@ -5,6 +5,11 @@ on:
     branches:
       - main
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: tech-data-app
+  OWNER: tech-for-impact-8team
+
 jobs:
   ci:
     name: CI (build only)
@@ -30,15 +35,39 @@ jobs:
       - name: Build
         run: pnpm build
 
-  deploy:
-    name: Deploy to EC2
+  build-and-push-image:
+    name: Build & Push Docker Image
     runs-on: ubuntu-latest
     needs: ci
-
+    permissions:
+      contents: read
+      packages: write    # GHCR 푸시 권한
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: build-and-push-image
+
+    steps:
       - name: SSH & Deploy to EC2
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -46,26 +75,28 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
+          command_timeout: 10m
           script: |
             set -e
 
-            cd ~/tech4impact-backend
+            IMAGE="${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.IMAGE_NAME }}"
+            TAG="${{ github.sha }}"
+            
+            echo ">> docker login ghcr.io"
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
-            echo ">> git pull"
-            git pull origin main
+            echo ">> pull new image"
+            docker pull $IMAGE:$TAG
 
             echo ">> stop & remove old container"
             docker stop tech-api || true
             docker rm tech-api || true
-
-            echo ">> build new image"
-            docker build -t tech-data-app .
 
             echo ">> run new container"
             docker run -d \
               --name tech-api \
               --env-file .env \
               -p 80:3000 \
-              tech-data-app
+              $IMAGE:$TAG
 
             echo ">> deployment done"
