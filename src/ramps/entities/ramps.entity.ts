@@ -44,6 +44,8 @@ export class RampsModel extends BaseModel {
   })
   user: UsersModel;
 
-  @OneToMany((type) => ImageModel, (image) => image.ramps)
+  @OneToMany((type) => ImageModel, (image) => image.ramps, {
+    nullable: true,
+  })
   images: ImageModel[];
 }

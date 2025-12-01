@@ -370,7 +370,6 @@ export class RampsService {
     return {
       totalRows: rows.length,
       imported: entities.length,
-      sample: entities.slice(0, 5),
     };
   }
 }
