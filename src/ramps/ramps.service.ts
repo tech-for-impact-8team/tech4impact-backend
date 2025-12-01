@@ -316,7 +316,7 @@ export class RampsService {
     const sheet = workbook.Sheets[sheetName];
 
     const rows = XLSX.utils.sheet_to_json<any>(sheet, {
-      range: 'A4:F999',
+      range: 'A5:F999',
       header: [
         'index', // A: 연번
         'district', // B: 자치구명
