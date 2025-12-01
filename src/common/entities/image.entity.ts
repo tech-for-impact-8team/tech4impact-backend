@@ -14,7 +14,7 @@ export class ImageModel extends BaseModel {
   @IsString()
   type: ImageType;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   @IsString()
   key: string;
 
