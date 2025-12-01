@@ -14,6 +14,10 @@ export class ImageModel extends BaseModel {
   @IsString()
   type: ImageType;
 
+  @Column({ type: 'varchar', length: 255 })
+  @IsString()
+  key: string;
+
   @ManyToOne((type) => RampsModel, (ramps) => ramps.images, {
     onDelete: 'CASCADE',
   })

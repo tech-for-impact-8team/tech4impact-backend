@@ -43,7 +43,7 @@ export class RampsService {
   async getRampsById(id: number, qr?: QueryRunner) {
     const repository = this.getRepository(qr);
     const ramp = await repository.findOne({
-      ...DEFAULT_RAMPS_FIND_OPTIONS,
+      relations: ['images'],
       where: { id },
     });
 
