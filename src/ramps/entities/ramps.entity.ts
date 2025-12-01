@@ -26,11 +26,11 @@ export class RampsModel extends BaseModel {
   @IsNumber()
   width: number;
 
-  @Column('double precision')
+  @Column('double precision', { nullable: true })
   @IsNumber()
   latitude: number;
 
-  @Column('double precision')
+  @Column('double precision', { nullable: true })
   @IsNumber()
   longitude: number;
 

@@ -43,10 +43,11 @@ export class GeocodingService {
       const lat = Number(doc.y);
 
       return { lat, lng };
-    } catch (e: any) {
+    } catch (error) {
       this.logger.error(
-        `Kakao geocode error for "${address}": ${e.message}`,
-        e.stack,
+        `Kakao geocode error for "${address}": ${error.message} ${JSON.stringify(
+          error.response?.data,
+        )}`,
       );
       return null;
     }
