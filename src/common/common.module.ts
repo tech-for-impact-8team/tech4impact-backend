@@ -6,9 +6,12 @@ import { extname } from 'path';
 import { MulterModule } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { v4 as uuid } from 'uuid';
+import { HttpModule } from '@nestjs/axios';
+import { GeocodingService } from './geocoding/geocoding.service';
 
 @Module({
   imports: [
+    HttpModule,
     ConfigModule.forRoot({
       envFilePath: '.env',
       isGlobal: true,
@@ -50,7 +53,7 @@ import { v4 as uuid } from 'uuid';
     }),
   ],
   controllers: [CommonController],
-  providers: [CommonService],
-  exports: [CommonService],
+  providers: [CommonService, GeocodingService],
+  exports: [CommonService, GeocodingService],
 })
 export class CommonModule {}
