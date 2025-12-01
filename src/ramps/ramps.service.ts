@@ -22,6 +22,8 @@ import { DeleteRampDto } from './dto/delete-ramp.dto';
 import { UpdateRampDto } from './dto/update-ramp.dto';
 import { CreateRampDto } from './dto/create-ramp.dto';
 import { ImagesService } from './image/images.service';
+import * as XLSX from 'xlsx';
+import { GeocodingService } from '../common/geocoding/geocoding.service';
 
 @Injectable()
 export class RampsService {
@@ -29,6 +31,7 @@ export class RampsService {
     @InjectRepository(RampsModel)
     private readonly rampsRepository: Repository<RampsModel>,
     private readonly imagesService: ImagesService,
+    private readonly geocodingService: GeocodingService,
   ) {}
 
   paginateRamps(dto: PaginateRampDto) {
@@ -260,5 +263,114 @@ export class RampsService {
         address: '서울시 금천구 어쩌구 저쩌구',
       });
     }
+  }
+
+  /**
+   * 1. 총 데이터 수
+   * 2. 적합 부적합 경사로 수
+   * 3. 유형별 분포
+   * 4. 자치구별 분포
+   */
+  async getRampsAnalytics() {
+    const totalCount = this.getTotalCount();
+    const typeDistribution = this.getTypeDistribution();
+    const districtDistribution = this.getDistrictDistribution();
+
+    return {
+      totalCount,
+      typeDistribution,
+      districtDistribution,
+    };
+  }
+
+  getTotalCount() {
+    return this.rampsRepository.count();
+  }
+
+  getTypeDistribution() {
+    return this.rampsRepository
+      .createQueryBuilder('ramps')
+      .select('ramps.type', 'type')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy('ramps.type')
+      .orderBy('count', 'DESC')
+      .getRawMany();
+  }
+
+  getDistrictDistribution() {
+    return this.rampsRepository
+      .createQueryBuilder('ramps')
+      .select('ramps.district', 'district')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy('ramps.district')
+      .getRawMany();
+  }
+
+  async parseRampsSheet(userId: number, file?: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('파일이 업로드되지 않았습니다.');
+    }
+
+    const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+
+    const rows = XLSX.utils.sheet_to_json<any>(sheet, {
+      range: 'A4:F999',
+      header: [
+        'index', // A: 연번
+        'district', // B: 자치구명
+        'facilityType', // C: 시설유형
+        'tradeName', // D: 상호명
+        'address', // E: 주소
+        'width', // F: 폭
+      ],
+      defval: null,
+    });
+
+    const cleaned = rows
+      .filter(
+        (row) =>
+          row.district && row.facilityType && row.tradeName && row.address,
+      )
+      .map((row) => ({
+        index: Number(row.index),
+        district: row.district.toString().trim(),
+        facilityType: row.facilityType.toString().trim(),
+        tradeName: row.tradeName.toString().trim(),
+        address: row.address.toString().trim(),
+        width: row.width != null ? Number(row.width) : null,
+      }));
+
+    const entities: RampsModel[] = [];
+
+    for (const row of cleaned) {
+      const fullAddress = row.address;
+
+      const geo = await this.geocodingService.geocodeByAddress(fullAddress);
+
+      const ramp = this.rampsRepository.create({
+        district: row.district,
+        type: row.facilityType,
+        tradeName: row.tradeName,
+        address: row.address,
+        width: row.width,
+        latitude: geo ? geo.lat : null,
+        longitude: geo ? geo.lng : null,
+        user: {
+          id: userId,
+        },
+      });
+
+      entities.push(ramp);
+    }
+
+    await this.rampsRepository.save(entities);
+
+    return {
+      totalRows: rows.length,
+      imported: entities.length,
+      sample: entities.slice(0, 5),
+    };
   }
 }

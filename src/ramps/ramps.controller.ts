@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { RampsService } from './ramps.service';
@@ -19,8 +20,9 @@ import { TransactionInterceptor } from '../common/interceptor/transaction.interc
 import { UserDecorator } from '../users/decorator/user.decorator';
 import { QueryRunnerDecorator } from '../common/decorator/query-runner.decorator';
 import { QueryRunner as QR } from 'typeorm';
-import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { ImagesService } from './image/images.service';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('ramps')
 export class RampsController {
@@ -79,6 +81,37 @@ export class RampsController {
   @ApiBearerAuth('authorization')
   async postRandomRamp(@UserDecorator('id') userId?: number) {
     await this.rampsService.generateRamps(userId);
+    return { ok: true };
+  }
+
+  @Get('analytics')
+  @ApiBearerAuth('authorization')
+  async getAnalytics() {
+    return await this.rampsService.getRampsAnalytics();
+  }
+
+  @Post('upload-excel')
+  @ApiBearerAuth('authorization')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: '엑셀 파일 업로드',
+    required: true,
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  async parseRampsData(
+    @UserDecorator('id') userId?: number,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    await this.rampsService.parseRampsSheet(userId, file);
     return { ok: true };
   }
 }
