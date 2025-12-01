@@ -35,7 +35,8 @@ import { S3Module } from './s3/s3.module';
       // nest.js에서 db 자동 생성
       // 개발 환경 true
       // 프로덕션 환경 false
-      synchronize: process.env.NODE_ENV !== 'production',
+      /*process.env.NODE_ENV !== 'production'*/
+      synchronize: true,
     }),
     UsersModule,
     CommonModule,
