@@ -42,7 +42,7 @@ export class UsersController {
     return this.usersService.createUser(createUserDto);
   }
 
-  @Get(':id')
+  /*@Get(':id')
   @ApiOperation({ summary: '유저 정보 조회' })
   @ApiParam({ type: Number, name: 'id', required: true })
   @ApiResponse({
@@ -51,7 +51,7 @@ export class UsersController {
   @ApiBearerAuth('authorization')
   getUser(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.getUser(id);
-  }
+  }*/
 
   @Delete(':id')
   @ApiOperation({ summary: '유저 정보 삭제' })
