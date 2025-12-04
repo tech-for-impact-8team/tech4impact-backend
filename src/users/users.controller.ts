@@ -6,7 +6,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
-  UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserRequestDto } from './dto/create-user-request.dto';
@@ -71,7 +71,7 @@ export class UsersController {
   @ApiResponse({
     type: GetUserInfoDto,
   })
-  @UseInterceptors(AccessTokenGuard)
+  @UseGuards(AccessTokenGuard)
   getMe(@UserDecorator('id') userId?: number) {
     return this.usersService.getUser(userId);
   }
