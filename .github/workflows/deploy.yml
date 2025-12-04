@@ -98,7 +98,7 @@ jobs:
             docker run -d \
               --name tech-api \
               --env-file .env \
-              -p 80:3000 \
+              -p 3000:3000 \
               $IMAGE:$TAG
 
             echo ">> deployment done"
