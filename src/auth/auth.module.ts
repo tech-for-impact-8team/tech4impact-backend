@@ -4,7 +4,10 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { ConfigModule } from '@nestjs/config';
-import { RefreshTokenCookieGuard } from './guard/bearer-token.guard';
+import {
+  AccessTokenGuard,
+  RefreshTokenCookieGuard,
+} from './guard/bearer-token.guard';
 
 @Module({
   imports: [
@@ -17,6 +20,6 @@ import { RefreshTokenCookieGuard } from './guard/bearer-token.guard';
   ],
   exports: [AuthService],
   controllers: [AuthController],
-  providers: [AuthService, RefreshTokenCookieGuard],
+  providers: [AuthService, RefreshTokenCookieGuard, AccessTokenGuard],
 })
 export class AuthModule {}
