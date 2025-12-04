@@ -19,6 +19,7 @@ import {
 } from '@nestjs/swagger';
 import { UsersModel } from './entities/users.entity';
 import { GetUserInfoDto } from './dto/get-user-info.dto';
+import { UserDecorator } from './decorator/user.decorator';
 
 @ApiTags('유저')
 @Controller('users')
@@ -60,5 +61,15 @@ export class UsersController {
   @ApiBearerAuth('authorization')
   deleteUser(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.deleteUser(id);
+  }
+
+  @Get('me')
+  @ApiBearerAuth('authorization')
+  @ApiOperation({ summary: '내 정보 조회' })
+  @ApiResponse({
+    type: GetUserInfoDto,
+  })
+  getMe(@UserDecorator('id') userId?: number) {
+    return this.usersService.getUser(userId);
   }
 }
