@@ -140,14 +140,22 @@ export class RampsService {
   private composeFindOptions(
     dto: PaginateRampDto,
   ): FindManyOptions<RampsModel> {
-    let where: FindOptionsWhere<RampsModel> = {};
+    let where: FindOptionsWhere<RampsModel> | FindOptionsWhere<RampsModel>[] =
+      {};
     let order: FindOptionsOrder<RampsModel> = {};
 
+    // 1) 먼저 일반 where, order 처리 (where__query는 일단 제외)
     for (const [key, value] of Object.entries(dto)) {
       if (value === undefined || value === null || value === '') continue;
+
+      if (key === 'where__query') {
+        // 여기서는 스킵하고 아래에서 따로 처리
+        continue;
+      }
+
       if (key.startsWith('where__')) {
         where = {
-          ...where,
+          ...(where as any),
           ...this.parseWhereFilter(key, value),
         };
       } else if (key.startsWith('order__')) {
@@ -155,6 +163,28 @@ export class RampsService {
           ...order,
           ...this.parseOrderFilter(key, value),
         };
+      }
+    }
+
+    // 2) 검색어(where__query) 처리
+    if (dto.where__query) {
+      const q = dto.where__query.trim();
+
+      if (q) {
+        const like = ILike(`%${q}%`);
+
+        // baseWhere는 district/type 같은 다른 필터들
+        const baseWhere =
+          Array.isArray(where) && where.length > 0
+            ? where[0]
+            : (where as FindOptionsWhere<RampsModel>);
+
+        // "기존 조건 AND (tradeName OR address OR district)" 형태로 OR 배열 생성
+        where = [
+          { ...baseWhere, tradeName: like },
+          { ...baseWhere, address: like },
+          { ...baseWhere, district: like },
+        ];
       }
     }
 
