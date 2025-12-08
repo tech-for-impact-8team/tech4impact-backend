@@ -24,6 +24,7 @@ import { CreateRampDto } from './dto/create-ramp.dto';
 import { ImagesService } from './image/images.service';
 import * as XLSX from 'xlsx';
 import { GeocodingService } from '../common/geocoding/geocoding.service';
+import { MarkersRampDto } from './dto/markers-ramp.dto';
 
 @Injectable()
 export class RampsService {
@@ -401,5 +402,17 @@ export class RampsService {
       totalRows: rows.length,
       imported: entities.length,
     };
+  }
+
+  async getRampsMarkers() {
+    const data = await this.rampsRepository.find({
+      select: ['id', 'latitude', 'longitude'],
+    });
+    const result: MarkersRampDto[] = data.map((ramp) => ({
+      id: ramp.id,
+      latitude: ramp.latitude,
+      longitude: ramp.longitude,
+    }));
+    return result;
   }
 }

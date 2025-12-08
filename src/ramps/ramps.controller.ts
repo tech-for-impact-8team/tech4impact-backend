@@ -20,9 +20,15 @@ import { TransactionInterceptor } from '../common/interceptor/transaction.interc
 import { UserDecorator } from '../users/decorator/user.decorator';
 import { QueryRunnerDecorator } from '../common/decorator/query-runner.decorator';
 import { QueryRunner as QR } from 'typeorm';
-import { ApiBearerAuth, ApiBody, ApiConsumes } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { ImagesService } from './image/images.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { MarkersRampDto } from './dto/markers-ramp.dto';
 
 @Controller('ramps')
 export class RampsController {
@@ -113,5 +119,12 @@ export class RampsController {
   ) {
     await this.rampsService.parseRampsSheet(userId, file);
     return { ok: true };
+  }
+
+  @Get('markers')
+  @ApiBearerAuth('authorization')
+  @ApiResponse({ type: MarkersRampDto, isArray: true })
+  async getRampMarkers() {
+    return this.rampsService.getRampsMarkers();
   }
 }
