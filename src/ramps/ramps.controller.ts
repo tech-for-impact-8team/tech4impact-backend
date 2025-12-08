@@ -78,7 +78,7 @@ export class RampsController {
     return this.rampsService.deleteRamps(body);
   }
 
-  @Patch(':id')
+  @Patch('detail/:id')
   @ApiBearerAuth('authorization')
   @UseInterceptors(TransactionInterceptor)
   @ApiBody({ type: UpdateRampDto })
