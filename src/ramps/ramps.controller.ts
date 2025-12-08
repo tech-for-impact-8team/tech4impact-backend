@@ -50,7 +50,7 @@ export class RampsController {
     return this.rampsService.getRampsMarkers();
   }
 
-  @Get(':id')
+  @Get('detail/:id')
   @ApiBearerAuth('authorization')
   getPost(@Param('id', ParseIntPipe) id: number) {
     return this.rampsService.getRampsById(id);
@@ -78,7 +78,7 @@ export class RampsController {
     return this.rampsService.deleteRamps(body);
   }
 
-  @Patch('detail/:id')
+  @Patch(':id')
   @ApiBearerAuth('authorization')
   @UseInterceptors(TransactionInterceptor)
   @ApiBody({ type: UpdateRampDto })
