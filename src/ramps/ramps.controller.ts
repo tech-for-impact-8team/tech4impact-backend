@@ -43,6 +43,13 @@ export class RampsController {
     return this.rampsService.paginateRamps(query);
   }
 
+  @Get('map/markers')
+  @ApiBearerAuth('authorization')
+  @ApiResponse({ type: MarkersRampDto, isArray: true })
+  async getRampMarkers() {
+    return this.rampsService.getRampsMarkers();
+  }
+
   @Get(':id')
   @ApiBearerAuth('authorization')
   getPost(@Param('id', ParseIntPipe) id: number) {
@@ -119,12 +126,5 @@ export class RampsController {
   ) {
     await this.rampsService.parseRampsSheet(userId, file);
     return { ok: true };
-  }
-
-  @Get('markers')
-  @ApiBearerAuth('authorization')
-  @ApiResponse({ type: MarkersRampDto, isArray: true })
-  async getRampMarkers() {
-    return this.rampsService.getRampsMarkers();
   }
 }
