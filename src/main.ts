@@ -11,7 +11,7 @@ async function bootstrap() {
     origin: [
       'http://localhost:5173',
       'http://localhost:3000',
-      'https://tech4impact-front.vercel.app/',
+      'https://tech4impact-front.vercel.app',
     ],
     credentials: true,
   });
